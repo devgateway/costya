@@ -9,10 +9,41 @@ define('APP_NAME', 'costya');
 
 class CostException extends \Exception {}
 
+class Month {
+  protected $start;
+
+  public function __construct($m) {
+    if ($m) {
+      $this->start = new \DateTimeImmutable($m);
+    } else {
+      $this_month = new \DateTimeImmutable(date('Y-m-01'));
+      $this->start = $this_month->sub(new \DateInterval('P1M'));
+    }
+  }
+
+  protected function format($dt, $format = 'Y-m-d') {
+    return $dt->format($format);
+  }
+
+  public function getStart() {
+    return $this->format($this->start);
+  }
+
+  public function getNext() {
+    return $this->format(
+      $this->start->add(new \DateInterval('P1M'))
+    );
+  }
+
+  public function __toString() {
+    return $this->format($this->start, 'Y-m');
+  }
+}
+
 class FileCache {
   protected $path;
 
-  public function __construct() {
+  public function __construct($month) {
     $env = getenv();
     if (isset($env['XDG_CACHE_HOME'])) {
       $path = array($env['XDG_CACHE_HOME']);
@@ -21,7 +52,7 @@ class FileCache {
     } else {
       throw new CostException('Can\'t determine cache directory: neither XDG_CACHE_HOME nor HOME are set');
     }
-    array_push($path, APP_NAME, 'data');
+    array_push($path, APP_NAME, (string) $month);
     $this->path = join(DIRECTORY_SEPARATOR, $path);
   }
 
@@ -43,8 +74,8 @@ class FileCache {
 class Costs {
   protected $cost_data;
 
-  public function __construct() {
-    $cache = new FileCache();
+  public function __construct($month) {
+    $cache = new FileCache($month);
     try {
       $this->cost_data = $cache->load();
     } catch (CostException $err) {
@@ -53,4 +84,6 @@ class Costs {
   }
 }
 
-$costs = new Costs();
+$args = getopt('d:');
+$month = new Month(isset($args['d']) ? $args['d'] : false);
+$costs = new Costs($month);
