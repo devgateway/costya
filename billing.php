@@ -116,11 +116,7 @@ class Costs {
       ]
     ]);
 
-    if ($result === false) {
-      throw new CostException('Failed to retrieve cost data');
-    }
-
-    return $result;
+    return $result->toArray();
   }
 
   public function display() {
