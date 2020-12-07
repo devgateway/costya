@@ -76,14 +76,20 @@ class FileCache {
 }
 
 class Costs {
-  protected $cost_data;
+  protected $data;
 
   public function __construct($month) {
     $cache = new FileCache($month);
     try {
-      $this->cost_data = $cache->load();
+      $this->data = $cache->load();
     } catch (CostException $err) {
       error_log($err->getMessage());
+      $this->data = $this->getData($month);
+      try {
+        $cache->save($this->data);
+      } catch (CostException $err) {
+        error_log($err->getMessage());
+      }
     }
   }
 }
