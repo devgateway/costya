@@ -120,7 +120,7 @@ class Costs {
   }
 
   public function display() {
-    var_dump($this->data);
+    echo json_encode($this->data, JSON_PRETTY_PRINT);
   }
 }
 
