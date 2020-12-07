@@ -120,7 +120,12 @@ class Costs {
   }
 
   public function display() {
-    echo json_encode($this->data, JSON_PRETTY_PRINT);
+    foreach ($this->data['ResultsByTime'][0]['Groups'] as $group) {
+      $project = explode('$', $group['Keys'][0])[1];
+      if (!$project) $project = '(untagged)';
+      $amount = sprintf('%.2f', $group['Metrics']['BlendedCost']['Amount']);
+      echo "$project\t$amount\n";
+    }
   }
 }
 
