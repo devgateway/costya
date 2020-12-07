@@ -58,7 +58,7 @@ class FileCache {
   }
 
   public function load() {
-    if (false === $data = file_get_contents($this->path)) {
+    if (false === $data = @file_get_contents($this->path)) {
       throw new CostException("Can't read cached data from {$this->path}");
     }
     return unserialize($data);
