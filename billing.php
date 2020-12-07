@@ -5,7 +5,8 @@ require 'vendor/autoload.php';
 
 use Aws\CostExplorer;
 
-define('APP_NAME', 'costya');
+define('APP_NAME',  'costya');
+define('REGION',    'us-east-1');
 
 class CostException extends \Exception {}
 
@@ -92,8 +93,42 @@ class Costs {
       }
     }
   }
+
+  protected function getData($month) {
+    $client = new \Aws\CostExplorer\CostExplorerClient([
+      'profile' => APP_NAME,
+      'region' => REGION,
+      'version' => 'latest'
+    ]);
+
+    $result = $client->getCostAndUsage([
+      'Metrics' => ['BlendedCost'],
+      'TimePeriod' => [
+        'Start' => $month->getStart(),
+        'End' => $month->getNext()
+      ],
+      'Granularity' => 'MONTHLY',
+      'GroupBy' => [
+        [
+          'Type' => 'TAG',
+          'Key' => 'Project'
+        ]
+      ]
+    ]);
+
+    if ($result === false) {
+      throw new CostException('Failed to retrieve cost data');
+    }
+
+    return $result;
+  }
+
+  public function display() {
+    var_dump($this->data);
+  }
 }
 
 $args = getopt('d:');
 $month = new Month(isset($args['d']) ? $args['d'] : false);
 $costs = new Costs($month);
+$costs->display();
