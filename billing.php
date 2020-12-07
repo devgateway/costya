@@ -64,8 +64,12 @@ class FileCache {
   }
 
   public function save($data) {
-    mkdir(dirname($this->path));
-    if (false === file_put_contents(serialize($data))) {
+    $dir = dirname($this->path);
+    if (!file_exists($dir)) {
+      mkdir($dir);
+    }
+
+    if (false === file_put_contents($this->path, serialize($data))) {
       throw new CostException('Can\'t cache data');
     }
   }
