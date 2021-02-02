@@ -11,33 +11,28 @@ define('REGION',    'us-east-1');
 class CostException extends \Exception {}
 
 class Month {
-  protected $start;
+  protected $first_day, $day_after_last, $date_format;
 
-  public function __construct($m) {
-    if ($m) {
-      $this->start = new \DateTimeImmutable($m);
-    } else {
-      $this_month = new \DateTimeImmutable(date('Y-m-01'));
-      $this->start = $this_month->sub(new \DateInterval('P1M'));
-    }
+  public function __construct($bill_date, $date_format = 'Y-m-d') {
+    $this->day_after_last = new \DateTimeImmutable($bill_date->format('Y-m-01'));
+    $this->first_day = $this->day_after_last->sub(new \DateInterval('P1M'));
+    $this->date_format = $date_format;
   }
 
   protected function format($dt, $format = 'Y-m-d') {
     return $dt->format($format);
   }
 
-  public function getStart() {
-    return $this->format($this->start);
+  public function getFirstDay() {
+    return $this->first_day->format($this->date_format);
   }
 
-  public function getNext() {
-    return $this->format(
-      $this->start->add(new \DateInterval('P1M'))
-    );
+  public function getDayAfterLast() {
+    return $this->day_after_last->format($this->date_format);
   }
 
   public function __toString() {
-    return $this->format($this->start, 'Y-m');
+    return $this->format($this->first_day, 'Y-m');
   }
 }
 
@@ -104,8 +99,8 @@ class Costs {
     $result = $client->getCostAndUsage([
       'Metrics' => ['BlendedCost'],
       'TimePeriod' => [
-        'Start' => $month->getStart(),
-        'End' => $month->getNext()
+        'Start' => $month->getFirstDay(),
+        'End' => $month->getDayAfterLast()
       ],
       'Granularity' => 'MONTHLY',
       'GroupBy' => [
