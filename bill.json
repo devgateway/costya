@@ -1,0 +1,22 @@
+{
+  "AMP": "TRM:AMP:2103-AMP-CORE:Total Resource Management",
+  "CCR": "ESD:4319-UNDP-CCRS:Effective Service Delivery",
+  "YALI": "ESD:4604-YALI-HOSTING:Effective Service Delivery",
+  "YALIMIS": "ESD:4604-YALI-HOSTING:Effective Service Delivery",
+  "VIFAA": "ESD:GATES-FERTILIZER",
+  "VIFAACOVID": "ESD:GATES-FERTILIZER:4505-FERTILIZER-COVID:Effective Service Delivery",
+  "SEEDS": "ESD:GATES-SEEDS",
+  "TCDI": "ESD:GATES-TOBACCO:4700-ESD-GATES-TOBACCO",
+  "DCDJ": "ESD:MCC-DCDJ:4400-MCC-DYSC:Effective Service Delivery",
+  "DYSC": "ESD:MCC-DCDJ:4400-MCC-DYSC:Effective Service Delivery",
+  "BDGIS": "MGMT:1026-MS-IT",
+  "MS-IT": "MGMT:1026-MS-IT",
+  "": "MGMT:1026-MS-IT",
+  "NEITI": "TRM:3300-FORD-2020",
+  "AMP-CORE": "TRM:AMP:2103-AMP-CORE:Total Resource Management",
+  "AMP-CHAD": "TRM:AMP:6212-AMP-CHAD-2020",
+  "OC": "TRM:Hewlett Phase 2:3010-Hewlett-Phase-2:Total Resource Management",
+  "OpenContracting": "TRM:Hewlett Phase 2:3010-Hewlett-Phase-2:Total Resource Management",
+  "OCMAKU": "TRM:Hewlett Phase 2:3010-Hewlett-Phase-2:Total Resource Management",
+  "AMP-HAITI": "TRM:USAID-HAITI:2598-USAID-HAITI"
+}
