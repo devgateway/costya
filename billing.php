@@ -71,7 +71,7 @@ class FileCache {
   }
 }
 
-class Costs {
+class ProjectCosts {
   protected $data;
 
   public function __construct($month) {
@@ -114,17 +114,66 @@ class Costs {
     return $result->toArray();
   }
 
-  public function display() {
+  public function get() {
+    $result = [];
     foreach ($this->data['ResultsByTime'][0]['Groups'] as $group) {
       $project = explode('$', $group['Keys'][0])[1];
-      if (!$project) $project = '(untagged)';
-      $amount = sprintf('%.2f', $group['Metrics']['BlendedCost']['Amount']);
-      echo "$project\t$amount\n";
+      $result[$project] = $group['Metrics']['BlendedCost']['Amount'];
+    }
+    return $result;
+  }
+}
+
+class ExpensifyCsv {
+  protected $billed_costs, $project_billing;
+
+  public function __construct($settings_file) {
+    $this->project_billing = json_decode(file_get_contents($settings_file), true);
+  }
+
+  public function setCosts($costs, $invoice_cents) {
+    $this->billed_costs = array_fill_keys(array_keys($this->project_billing), 0);
+    $default_billing = $this->project_billing[''];
+
+    $total = 0;
+    foreach ($costs->get() as $project => $usd) {
+      $cents = (int) ($usd * 100);
+      $total += $cents;
+      if (isset($this->project_billing[$project])) {
+        $billing_code = $this->project_billing[$project];
+      } else {
+        error_log("No billing code for '$project', using '$default_billing'");
+        $billing_code = $default_billing;
+      }
+      if (!isset($this->billed_costs[$billing_code])) {
+        $this->billed_costs[$billing_code] = 0;
+      }
+      $this->billed_costs[$billing_code] += $cents;
+    }
+
+    $diff = $invoice_cents - $total;
+    if ($diff != 0) {
+      error_log(sprintf('Adjusting %s by %+d cents', $default_billing, $diff));
+      $this->billed_costs[$default_billing] += $diff;
+    }
+  }
+
+  public function display($invoice_date) {
+    $merchant = 'Amazon Web Services';
+    $category = '65000-IT Services, Softwares, Hosting & Subscriptions';
+    $formatted_date = (new DateTimeImmutable($invoice_date))->format('Y-m-d H:i:s');
+
+    foreach ($this->billed_costs as $code => $cents) {
+      printf('"%s",%s,%.2f,"%s","%s"' . "\n", $merchant, $formatted_date, $cents / 100.0, $category, $code);
     }
   }
 }
 
-$args = getopt('d:');
-$month = new Month(isset($args['d']) ? $args['d'] : false);
-$costs = new Costs($month);
-$costs->display();
+$args = getopt('d:b:t:');
+$invoice_date = $args['d'];
+$settings_file = $args['b'];
+$total_cents = (int) ($args['t'] * 100)
+
+$month = new Month($invoice_date);
+$costs = new ProjectCosts($month);
+$csv = new ExpensifyCsv($settings_file);
