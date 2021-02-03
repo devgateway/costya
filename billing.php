@@ -137,7 +137,7 @@ class ExpensifyCsv {
 
     $total = 0;
     foreach ($costs->get() as $project => $usd) {
-      $cents = (int) ($usd * 100);
+      $cents = (int) round($usd * 100);
       $total += $cents;
       if (isset($this->project_billing[$project])) {
         $billing_code = $this->project_billing[$project];
@@ -164,7 +164,7 @@ class ExpensifyCsv {
     $formatted_date = (new \DateTimeImmutable($invoice_date))->format('Y-m-d H:i:s');
 
     foreach ($this->billed_costs as $code => $cents) {
-      printf('"%s",%s,%.2f,"%s","%s"' . "\n", $merchant, $formatted_date, $cents / 100.0, $category, $code);
+      printf('"%s","%s",%.2f,"%s","%s"' . "\n", $merchant, $formatted_date, $cents / 100.0, $category, $code);
     }
   }
 }
