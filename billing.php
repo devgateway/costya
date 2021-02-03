@@ -20,10 +20,6 @@ class Month {
     $this->date_format = $date_format;
   }
 
-  protected function format($dt, $format = 'Y-m-d') {
-    return $dt->format($format);
-  }
-
   public function getFirstDay() {
     return $this->first_day->format($this->date_format);
   }
@@ -33,7 +29,7 @@ class Month {
   }
 
   public function __toString() {
-    return $this->format($this->first_day, 'Y-m');
+    return $this->first_day->format('Y-m');
   }
 }
 
