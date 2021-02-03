@@ -13,8 +13,9 @@ class CostException extends \Exception {}
 class Month {
   protected $first_day, $day_after_last, $date_format;
 
-  public function __construct($bill_date, $date_format = 'Y-m-d') {
-    $this->day_after_last = new \DateTimeImmutable($bill_date->format('Y-m-01'));
+  public function __construct($invoice_date, $date_format = 'Y-m-d') {
+    $date = new \DateTimeImmutable($invoice_date);
+    $this->day_after_last = new \DateTimeImmutable($date->format('Y-m-01'));
     $this->first_day = $this->day_after_last->sub(new \DateInterval('P1M'));
     $this->date_format = $date_format;
   }
@@ -132,7 +133,6 @@ class ExpensifyCsv {
   }
 
   public function setCosts($costs, $invoice_cents) {
-    $this->billed_costs = array_fill_keys(array_keys($this->project_billing), 0);
     $default_billing = $this->project_billing[''];
 
     $total = 0;
@@ -161,7 +161,7 @@ class ExpensifyCsv {
   public function display($invoice_date) {
     $merchant = 'Amazon Web Services';
     $category = '65000-IT Services, Softwares, Hosting & Subscriptions';
-    $formatted_date = (new DateTimeImmutable($invoice_date))->format('Y-m-d H:i:s');
+    $formatted_date = (new \DateTimeImmutable($invoice_date))->format('Y-m-d H:i:s');
 
     foreach ($this->billed_costs as $code => $cents) {
       printf('"%s",%s,%.2f,"%s","%s"' . "\n", $merchant, $formatted_date, $cents / 100.0, $category, $code);
@@ -172,8 +172,10 @@ class ExpensifyCsv {
 $args = getopt('d:b:t:');
 $invoice_date = $args['d'];
 $settings_file = $args['b'];
-$total_cents = (int) ($args['t'] * 100)
+$invoice_cents = (int) ($args['t'] * 100);
 
 $month = new Month($invoice_date);
 $costs = new ProjectCosts($month);
 $csv = new ExpensifyCsv($settings_file);
+$csv->setCosts($costs, $invoice_cents);
+$csv->display($invoice_date);
