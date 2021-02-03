@@ -1,10 +1,10 @@
 # Costya
 
-A tool to show how much AWS cost ya. Displays billing itemization for a given month by Project tag. Responses from AWS Cost Explorer are cached to avoid extra charges.
+A tool to show how much AWS cost ya. Displays billing itemization for a given month by Expensify code. Responses from AWS Cost Explorer are cached to avoid extra charges.
 
-## Synopsis
+## Usage Example
 
-    php billing.php [-d DATE]
+    php -f billing.php -- -d 2021-01-21 -b bill.json -t 533.37
 
 ### `-d DATE`
 
