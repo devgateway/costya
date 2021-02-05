@@ -123,12 +123,32 @@ class ProjectCosts {
 }
 
 class BillingCodes {
+  protected $default_code, $codes = [];
+
   public function __construct($settings_file) {
-    $this->codes = json_decode(file_get_contents($settings_file), true);
+    $handle = fopen($settings_file, 'r');
+    if ($handle === FALSE) {
+      die("Unable to open for reading: $settings_file");
+    }
+    $first_row = TRUE;
+    while ($items = fgetcsv($handle) !== FALSE) {
+      if ($first_row) {
+        if (strrchr($items[1], ':') === FALSE) {
+          error_log('First line in CSV is a header, skipping');
+          continue;
+        } else {
+          $this->default_code = str_replace("\r", '', $items[1]);
+          $first_row = FALSE;
+        }
+      }
+
+      $this->codes[$items[0]] = str_replace("\r", '', $items[1]);
+    }
+    fclose($handle);
   }
 
   public function getDefaultCode() {
-    return $this->codes[''];
+    return $this->default_code;
   }
 
   public function toArray() {
