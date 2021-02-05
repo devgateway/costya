@@ -69,7 +69,7 @@ class FileCache {
   }
 }
 
-class ProjectCosts {
+class AwsBilling {
   protected $data;
 
   public function __construct($month) {
@@ -115,21 +115,23 @@ class ProjectCosts {
   public function get() {
     $result = [];
     foreach ($this->data['ResultsByTime'][0]['Groups'] as $group) {
-      $project = explode('$', $group['Keys'][0])[1];
-      $result[$project] = $group['Metrics']['BlendedCost']['Amount'];
+      $tag = explode('$', $group['Keys'][0])[1];
+      $result[$tag] = $group['Metrics']['BlendedCost']['Amount'];
     }
     return $result;
   }
 }
 
-class BillingCodes {
-  protected $default_code, $codes = [];
+class ExpensifyBilling {
+  protected $default_code, $codes = [], $costs;
 
-  public function __construct($settings_file) {
-    $handle = fopen($settings_file, 'r');
+  public function __construct($codes_csv, $aws_billing, $invoice_cents) {
+    ini_set('auto_detect_line_endings', TRUE);
+    $handle = fopen($codes_csv, 'r');
     if ($handle === FALSE) {
-      die("Unable to open for reading: $settings_file");
+      die("Unable to open for reading: $codes_csv");
     }
+
     $first_row = TRUE;
     while (($items = fgetcsv($handle)) !== FALSE) {
       if ($first_row) {
@@ -137,56 +139,44 @@ class BillingCodes {
           error_log('First line in CSV is a header, skipping');
           continue;
         } else {
-          $this->default_code = str_replace("\r", '', $items[1]);
+          $this->default_code = $items[1];
           $first_row = FALSE;
         }
       }
 
-      $this->codes[$items[0]] = str_replace("\r", '', $items[1]);
+      $this->codes[$items[0]] = $items[1];
     }
+
     fclose($handle);
+
+    $this->costs = $this->getCosts($aws_billing, $invoice_cents);
   }
 
-  public function getDefaultCode() {
-    return $this->default_code;
-  }
-
-  public function toArray() {
-    return $this->codes;
-  }
-}
-
-class ExpensifyCsv {
-  protected $billed_costs, $billing_codes;
-
-  public function __construct($billing_codes) {
-    $this->billing_codes = $billing_codes->toArray();
-  }
-
-  public function setCosts($costs, $invoice_cents) {
-    $default_billing = $this->getDefaultCode();
-
+  protected function getCosts($aws_billing, $invoice_cents) {
+    $costs = [];
     $total = 0;
-    foreach ($costs->get() as $project => $usd) {
+    foreach ($aws_billing->get() as $tag => $usd) {
       $cents = (int) round($usd * 100);
       $total += $cents;
-      if (isset($this->billing_codes[$project])) {
-        $billing_code = $this->billing_codes[$project];
+      if (isset($this->codes[$tag])) {
+        $billing_code = $this->codes[$tag];
       } else {
-        error_log("No billing code for '$project', using '$default_billing'");
-        $billing_code = $default_billing;
+        error_log("No billing code for '$tag', using '" . $this->default_code . "'");
+        $billing_code = $this->default_code;
       }
-      if (!isset($this->billed_costs[$billing_code])) {
-        $this->billed_costs[$billing_code] = 0;
+      if (!isset($this->costs[$billing_code])) {
+        $costs[$billing_code] = 0;
       }
-      $this->billed_costs[$billing_code] += $cents;
+      $costs[$billing_code] += $cents;
     }
 
     $diff = $invoice_cents - $total;
     if ($diff != 0) {
-      error_log(sprintf('Adjusting %s by %+d cents', $default_billing, $diff));
-      $this->billed_costs[$default_billing] += $diff;
+      error_log(sprintf('Adjusting %s by %+d cents', $this->default_code, $diff));
+      $costs[$this->default_code] += $diff;
     }
+
+    return $costs;
   }
 
   public function display($invoice_date) {
@@ -194,20 +184,19 @@ class ExpensifyCsv {
     $category = '65000-IT Services, Softwares, Hosting & Subscriptions';
     $formatted_date = (new \DateTimeImmutable($invoice_date))->format('Y-m-d H:i:s');
 
-    foreach ($this->billed_costs as $code => $cents) {
-      printf('"%s","%s",%.2f,"%s","%s"' . "\n", $merchant, $formatted_date, $cents / 100.0, $category, $code);
+    foreach ($this->costs as $code => $cents) {
+      printf('"%s","%s",%.2f,"%s","%s"' . "\n",
+        $merchant, $formatted_date, $cents / 100.0, $category, $code);
     }
   }
 }
 
 $args = getopt('d:b:t:');
 $invoice_date = $args['d'];
-$settings_file = $args['b'];
+$codes_csv = $args['b'];
 $invoice_cents = (int) ($args['t'] * 100);
 
 $month = new Month($invoice_date);
-$costs = new ProjectCosts($month);
-$codes = new BillingCodes($settings_file);
-$csv = new ExpensifyCsv($codes);
-$csv->setCosts($costs, $invoice_cents);
-$csv->display($invoice_date);
+$aws_billing = new AwsBilling($month);
+$expensify_billing = new ExpensifyBilling($codes_csv, $aws_billing, $invoice_cents);
+$expensify_billing->display($invoice_date);
