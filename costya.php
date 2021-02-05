@@ -122,22 +122,36 @@ class ProjectCosts {
   }
 }
 
-class ExpensifyCsv {
-  protected $billed_costs, $project_billing;
-
+class BillingCodes {
   public function __construct($settings_file) {
-    $this->project_billing = json_decode(file_get_contents($settings_file), true);
+    $this->codes = json_decode(file_get_contents($settings_file), true);
+  }
+
+  public function getDefaultCode() {
+    return $this->codes[''];
+  }
+
+  public function toArray() {
+    return $this->codes;
+  }
+}
+
+class ExpensifyCsv {
+  protected $billed_costs, $billing_codes;
+
+  public function __construct($billing_codes) {
+    $this->billing_codes = $billing_codes->toArray();
   }
 
   public function setCosts($costs, $invoice_cents) {
-    $default_billing = $this->project_billing[''];
+    $default_billing = $this->getDefaultCode();
 
     $total = 0;
     foreach ($costs->get() as $project => $usd) {
       $cents = (int) round($usd * 100);
       $total += $cents;
-      if (isset($this->project_billing[$project])) {
-        $billing_code = $this->project_billing[$project];
+      if (isset($this->billing_codes[$project])) {
+        $billing_code = $this->billing_codes[$project];
       } else {
         error_log("No billing code for '$project', using '$default_billing'");
         $billing_code = $default_billing;
@@ -173,6 +187,7 @@ $invoice_cents = (int) ($args['t'] * 100);
 
 $month = new Month($invoice_date);
 $costs = new ProjectCosts($month);
-$csv = new ExpensifyCsv($settings_file);
+$codes = new BillingCodes($settings_file);
+$csv = new ExpensifyCsv($codes);
 $csv->setCosts($costs, $invoice_cents);
 $csv->display($invoice_date);
