@@ -179,24 +179,25 @@ class ExpensifyBilling {
     return $costs;
   }
 
-  public function display($invoice_date) {
-    $merchant = 'Amazon Web Services';
-    $category = '65000-IT Services, Softwares, Hosting & Subscriptions';
+  public function toCsv($handle, $invoice_date) {
     $formatted_date = (new \DateTimeImmutable($invoice_date))->format('Y-m-d H:i:s');
 
     foreach ($this->costs as $code => $cents) {
-      printf('"%s","%s",%.2f,"%s","%s"' . "\n",
-        $merchant, $formatted_date, $cents / 100.0, $category, $code);
+      fputcsv($handle, [
+        'Amazon Web Services',
+        $formatted_date,
+        sprintf('%.2f', $cents / 100.0),
+        '65000-IT Services, Softwares, Hosting & Subscriptions',
+        $code
+      ]);
     }
   }
 }
 
 $args = getopt('d:b:t:');
 $invoice_date = $args['d'];
-$codes_csv = $args['b'];
 $invoice_cents = (int) ($args['t'] * 100);
 
-$month = new Month($invoice_date);
-$aws_billing = new AwsBilling($month);
-$expensify_billing = new ExpensifyBilling($codes_csv, $aws_billing, $invoice_cents);
-$expensify_billing->display($invoice_date);
+$aws_billing = new AwsBilling(new Month($invoice_date));
+$expensify_billing = new ExpensifyBilling($args['b'], $aws_billing, $invoice_cents);
+$expensify_billing->toCsv(STDOUT, $invoice_date);
