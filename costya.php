@@ -131,7 +131,7 @@ class BillingCodes {
       die("Unable to open for reading: $settings_file");
     }
     $first_row = TRUE;
-    while ($items = fgetcsv($handle) !== FALSE) {
+    while (($items = fgetcsv($handle)) !== FALSE) {
       if ($first_row) {
         if (strrchr($items[1], ':') === FALSE) {
           error_log('First line in CSV is a header, skipping');
