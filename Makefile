@@ -16,7 +16,7 @@ $(RECEIPT): $(BILLS) | expensify
 	pdftk $^ cat output $@
 
 $(CSV): billing-codes.json costya.php | expensify
-	if [ -n "$(DATE)" -o -n "$(TOTAL)" ]; then \
+	@if [ -z "$(DATE)" -o -z "$(TOTAL)" ]; then \
 	  echo "Invoice DATE and TOTAL are required, e.g.:" >&2; \
 	  echo "$(MAKE) DATE=2021-01-15 TOTAL=123.45+12.42 $@" >&2; \
 	  exit 1; \
