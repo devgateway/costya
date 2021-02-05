@@ -11,7 +11,10 @@ Merge AWS bills into a single multi-page PDF receipt, and attach it to each impo
 
 ## Usage Example
 
-    ./costya.php -d 2021-01-21 -b billing-codes.json -t 533.37
+    make DATE=2021-01-21 TOTAL=509+12.72+11.65
+
+The Makefile will call:
+
     php -f costya.php -- -d 2021-01-21 -b billing-codes.json -t 533.37
 
 ### `-d DATE`
@@ -45,4 +48,4 @@ this case.
 
 Requires [Composer](https://getcomposer.org/) and PHP CLI. Run:
 
-    composer install --no-dev
+    make install

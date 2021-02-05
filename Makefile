@@ -21,7 +21,7 @@ $(CSV): billing-codes.json costya.php | expensify
 	  echo "$(MAKE) DATE=2021-01-15 TOTAL=123.45+12.42 $@" >&2; \
 	  exit 1; \
 	fi
-	./costya.php -d $(DATE) -b $< -t "$$(echo "$(TOTAL)" | bc)" >$@
+	php -f costya.php -- -d $(DATE) -b $< -t "$$(echo "$(TOTAL)" | bc)" >$@
 
 clean:
 	-rm -f $(BILLS) $(DIR)/*
