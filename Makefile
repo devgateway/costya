@@ -2,26 +2,26 @@ BILLS=$(wildcard *.pdf)
 
 DIR:=expensify
 RECEIPT=$(DIR)/receipt.pdf
-CSV=$(DIR)/import.csv
+IMPORT=$(DIR)/import.csv
+TXT=$(RECEIPT:.pdf=.txt)
 
-.DELETE_ON_ERROR: $(CSV)
+.DELETE_ON_ERROR: $(IMPORT)
 .PHONY: all clean install
+.INTERMEDIATE: $(TXT)
 
-all: | $(RECEIPT) $(CSV)
+all: | $(RECEIPT) $(IMPORT)
 
 $(DIR):
 	test -d $@ || mkdir $@
 
-$(RECEIPT): $(BILLS) | expensify
+$(RECEIPT): $(BILLS) | $(DIR)
 	pdftk $^ cat output $@
 
-$(CSV): billing-codes.json costya.php | expensify
-	@if [ -z "$(DATE)" -o -z "$(TOTAL)" ]; then \
-	  echo "Invoice DATE and TOTAL are required, e.g.:" >&2; \
-	  echo "$(MAKE) DATE=2021-01-15 TOTAL=123.45+12.42 $@" >&2; \
-	  exit 1; \
-	fi
-	php -f costya.php -- -d $(DATE) -b $< -t "$$(echo "$(TOTAL)" | bc)" >$@
+$(TXT): $(RECEIPT) | $(DIR)
+	pdftotext -layout $< $@
+
+$(IMPORT): codes.csv costya.php $(TXT) | $(DIR)
+	php -f costya.php -- $< <$(TXT) >$@
 
 clean:
 	-rm -f $(BILLS) $(DIR)/*

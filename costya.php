@@ -14,8 +14,7 @@ class CostException extends \Exception {}
 class Month {
   protected $first_day, $day_after_last, $date_format;
 
-  public function __construct($invoice_date, $date_format = 'Y-m-d') {
-    $date = new \DateTimeImmutable($invoice_date);
+  public function __construct($date, $date_format = 'Y-m-d') {
     $this->day_after_last = new \DateTimeImmutable($date->format('Y-m-01'));
     $this->first_day = $this->day_after_last->sub(new \DateInterval('P1M'));
     $this->date_format = $date_format;
@@ -129,7 +128,7 @@ class ExpensifyBilling {
     ini_set('auto_detect_line_endings', TRUE);
     $handle = fopen($codes_csv, 'r');
     if ($handle === FALSE) {
-      die("Unable to open for reading: $codes_csv");
+      die("Unable to open for reading: $codes_csv\n");
     }
 
     $first_row = TRUE;
@@ -180,7 +179,7 @@ class ExpensifyBilling {
   }
 
   public function toCsv($handle, $invoice_date) {
-    $formatted_date = (new \DateTimeImmutable($invoice_date))->format('Y-m-d H:i:s');
+    $formatted_date = $invoice_date->format('Y-m-d H:i:s');
 
     foreach ($this->costs as $code => $cents) {
       fputcsv($handle, [
@@ -194,10 +193,40 @@ class ExpensifyBilling {
   }
 }
 
-$args = getopt('d:b:t:');
-$invoice_date = $args['d'];
-$invoice_cents = (int) ($args['t'] * 100);
+class Invoice {
+  public $total, $date;
 
-$aws_billing = new AwsBilling(new Month($invoice_date));
-$expensify_billing = new ExpensifyBilling($args['b'], $aws_billing, $invoice_cents);
-$expensify_billing->toCsv(STDOUT, $invoice_date);
+  public function __construct($handle) {
+    $dates = [];
+    $line_num = 1;
+    $this->total = 0;
+
+    while (($line = fgets($handle, 8192)) !== FALSE) {
+
+      if (strpos($line, 'Total for this invoice') !== FALSE) {
+        if (preg_match('/\$(\S+)\s*$/', $line, $matches) === 1) {
+          $this->total += $matches[1];
+        } else {
+          die("Can't parse line $line_num for invoice total\n");
+        }
+      } elseif (strpos($line, 'Invoice Date:') !== FALSE) {
+        if (preg_match('/[[:upper:]][^[:upper:]]+$/', $line, $matches) === 1) {
+          $dates[] = new \DateTimeImmutable($matches[0]);
+        } else {
+          die("Can't parse line $line_num for invoice date\n");
+        }
+      }
+
+      $line_num++;
+    }
+
+    $this->date = max($dates);
+
+    error_log("Using invoice total of \${$this->total} on {$this->date->format('F d, Y')}");
+  }
+}
+
+$invoice = new Invoice(STDIN);
+$aws_billing = new AwsBilling(new Month($invoice->date));
+$expensify_billing = new ExpensifyBilling($argv[1], $aws_billing, (int) ($invoice->total * 100));
+$expensify_billing->toCsv(STDOUT, $invoice->date);

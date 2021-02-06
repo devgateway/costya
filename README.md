@@ -7,34 +7,20 @@ The standard output is formatted as a CSV table, suitable for import into Expens
 
     Merchant,Date,Amount,Category,Tag
 
-Merge AWS bills into a single multi-page PDF receipt, and attach it to each imported expense.
+AWS bills will be merged into a single multi-page PDF receipt; attach it to each imported expense.
 
-## Usage Example
+The script will parse invoice dates, and find the latest one. It will query AWS expenses for the calendar month that
+precedes it. This date will also be output in the resulting CSV.
 
-    make DATE=2021-01-21 TOTAL=509+12.72+11.65
-
-The Makefile will call:
-
-    php -f costya.php -- -d 2021-01-21 -b codes.csv -t 533.37
-
-### `-d DATE`
-
-AWS invoice date, in any format that [PHP can parse](https://www.php.net/manual/en/datetime.formats.php). The script
-will query the calendar month before this date.
-
-### `-b BILLING_CSV`
-
-A CSV file that matches AWS `Project` tags with Expensify billing codes. If the first line doesn't contain a colon
-(`:`) character in the second column, it's considered a header and skipped.
+A CSV file that matches AWS `Project` tags with Expensify billing codes should be called `codes.csv`. If the first
+line doesn't contain a colon (`:`) character in the second column, it's considered a header and skipped.
 
 The billing code in the first data line is the default code. Billing to this code shows a warning. It is used for:
 
 1. Billing of the tags that don't have a matching code.
-2. Adjusting for rounding errors, see `-t` argument description.
+2. Adjusting for rounding errors.
 
-### `-t TOTAL_PAID`
-
-The amount in USD actually charged by Amazon. At this time, it's not possible to retrieve it with AWS API.
+The amount actually charged by Amazon is calculated as a sum of invoice totals.
 
 Amazon charges fractional cents per Project tag, so subtotals by billing code don't add up precisely when rounded to
 whole cents. The script adjusts the default billing code's subtotal to accomodate for that. A warning is displayed in
@@ -42,6 +28,12 @@ this case.
 
 ## Installation
 
-Requires [Composer](https://getcomposer.org/) and PHP CLI. Run:
+Requires [Composer](https://getcomposer.org/), PHP CLI, pdftk, and pdftotext. To install Composer dependencies, run:
 
     make install
+
+## Usage Example
+
+Download Amazon invoice PDFs to the project directory, and run:
+
+    make
