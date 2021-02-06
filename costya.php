@@ -122,9 +122,9 @@ class AwsBilling {
 }
 
 class ExpensifyBilling {
-  protected $default_code, $codes = [], $costs;
+  protected $default_code, $codes = [];
 
-  public function __construct($codes_csv, $aws_billing, $invoice_cents) {
+  public function __construct($codes_csv) {
     ini_set('auto_detect_line_endings', TRUE);
     $handle = fopen($codes_csv, 'r');
     if ($handle === FALSE) {
@@ -147,41 +147,36 @@ class ExpensifyBilling {
     }
 
     fclose($handle);
-
-    $this->costs = $this->getCosts($aws_billing, $invoice_cents);
   }
 
-  protected function getCosts($aws_billing, $invoice_cents) {
+  public function toCsv($handle, $aws_billing, $invoice) {
     $costs = [];
     $total = 0;
+
     foreach ($aws_billing->get() as $tag => $usd) {
       $cents = (int) round($usd * 100);
       $total += $cents;
       if (isset($this->codes[$tag])) {
         $billing_code = $this->codes[$tag];
       } else {
-        error_log("No billing code for '$tag', using '" . $this->default_code . "'");
+        error_log("No billing code for '$tag', using '{$this->default_code}'");
         $billing_code = $this->default_code;
       }
-      if (!isset($this->costs[$billing_code])) {
+      if (!isset($costs[$billing_code])) {
         $costs[$billing_code] = 0;
       }
       $costs[$billing_code] += $cents;
     }
 
-    $diff = $invoice_cents - $total;
+    $diff = $invoice->cents - $total;
     if ($diff != 0) {
       error_log(sprintf('Adjusting %s by %+d cents', $this->default_code, $diff));
       $costs[$this->default_code] += $diff;
     }
 
-    return $costs;
-  }
+    $formatted_date = $invoice->date->format('Y-m-d H:i:s');
 
-  public function toCsv($handle, $invoice_date) {
-    $formatted_date = $invoice_date->format('Y-m-d H:i:s');
-
-    foreach ($this->costs as $code => $cents) {
+    foreach ($costs as $code => $cents) {
       fputcsv($handle, [
         'Amazon Web Services',
         $formatted_date,
@@ -194,18 +189,18 @@ class ExpensifyBilling {
 }
 
 class Invoice {
-  public $total, $date;
+  public $cents, $date;
 
   public function __construct($handle) {
     $dates = [];
     $line_num = 1;
-    $this->total = 0;
+    $this->cents = 0;
 
     while (($line = fgets($handle, 8192)) !== FALSE) {
 
       if (strpos($line, 'Total for this invoice') !== FALSE) {
         if (preg_match('/\$(\S+)\s*$/', $line, $matches) === 1) {
-          $this->total += $matches[1];
+          $this->cents += (int) ($matches[1] * 100);
         } else {
           die("Can't parse line $line_num for invoice total\n");
         }
@@ -222,11 +217,13 @@ class Invoice {
 
     $this->date = max($dates);
 
-    error_log("Using invoice total of \${$this->total} on {$this->date->format('F d, Y')}");
+    $usd = $this->cents / 100.0;
+    $date = $this->date->format('F d, Y');
+    error_log("Invoice date $date, amount \$$usd");
   }
 }
 
 $invoice = new Invoice(STDIN);
 $aws_billing = new AwsBilling(new Month($invoice->date));
-$expensify_billing = new ExpensifyBilling($argv[1], $aws_billing, (int) ($invoice->total * 100));
-$expensify_billing->toCsv(STDOUT, $invoice->date);
+$expensify_billing = new ExpensifyBilling($argv[1]);
+$expensify_billing->toCsv(STDOUT, $aws_billing, $invoice);
