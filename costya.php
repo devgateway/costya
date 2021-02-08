@@ -121,6 +121,23 @@ class AwsBilling {
   }
 }
 
+class BillingCode {
+  public $project, $pillar;
+
+  public function __construct($project, $pillar) {
+    $this->project = $project;
+    $this->pillar = $pillar;
+  }
+
+  public function format() {
+    $escaped = array_map(function ($tag) {
+      return str_replace(':', '\:', $tag);
+    }, [$this->project, $this->pillar]);
+
+    return implode(':', $escaped);
+  }
+}
+
 class ExpensifyBilling {
   protected $default_code, $codes = [];
 
@@ -138,12 +155,12 @@ class ExpensifyBilling {
           error_log('First line in CSV is a header, skipping');
           continue;
         } else {
-          $this->default_code = $items[1];
+          $this->default_code = new BillingCode($items[1], $items[2]);
           $first_row = FALSE;
         }
       }
 
-      $this->codes[$items[0]] = $items[1];
+      $this->codes[$items[0]] = new BillingCode($items[1], $items[2]);
     }
 
     fclose($handle);
@@ -157,10 +174,10 @@ class ExpensifyBilling {
       $cents = (int) round($usd * 100);
       $total += $cents;
       if (isset($this->codes[$tag])) {
-        $billing_code = $this->codes[$tag];
+        $billing_code = $this->codes[$tag]->format();
       } else {
-        error_log("No billing code for '$tag', using '{$this->default_code}'");
-        $billing_code = $this->default_code;
+        error_log("No billing code for '$tag', using '{$this->default_code->format()}'");
+        $billing_code = $this->default_code->format();
       }
       if (!isset($costs[$billing_code])) {
         $costs[$billing_code] = 0;
@@ -170,8 +187,8 @@ class ExpensifyBilling {
 
     $diff = $invoice->cents - $total;
     if ($diff != 0) {
-      error_log(sprintf('Adjusting %s by %+d cents', $this->default_code, $diff));
-      $costs[$this->default_code] += $diff;
+      error_log(sprintf('Adjusting %s by %+d cents', $this->default_code->format(), $diff));
+      $costs[$this->default_code->format()] += $diff;
     }
 
     $formatted_date = $invoice->date->format('Y-m-d');
