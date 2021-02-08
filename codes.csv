@@ -11,8 +11,10 @@ DCDJ,ESD:MCC-DCDJ:4400-MCC-DYSC:Effective Service Delivery
 DYSC,ESD:MCC-DCDJ:4400-MCC-DYSC:Effective Service Delivery
 BDGIS,MGMT:1026-MS-IT
 NEITI,TRM:3300-FORD-2020
+AMP,TRM:AMP:2103-AMP-CORE:Total Resource Management
 AMP-CORE,TRM:AMP:2103-AMP-CORE:Total Resource Management
 AMP-CHAD,TRM:AMP:6212-AMP-CHAD-2020
 OC,TRM:Hewlett Phase 2:3010-Hewlett-Phase-2:Total Resource Management
+OpenContracting,TRM:Hewlett Phase 2:3010-Hewlett-Phase-2:Total Resource Management
 OCMAKU,TRM:Hewlett Phase 2:3010-Hewlett-Phase-2:Total Resource Management
 AMP-HAITI,TRM:USAID-HAITI:2598-USAID-HAITI
