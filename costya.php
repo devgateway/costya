@@ -174,7 +174,7 @@ class ExpensifyBilling {
       $costs[$this->default_code] += $diff;
     }
 
-    $formatted_date = $invoice->date->format('Y-m-d H:i:s');
+    $formatted_date = $invoice->date->format('Y-m-d');
 
     foreach ($costs as $code => $cents) {
       fputcsv($handle, [
