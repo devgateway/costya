@@ -1,4 +1,9 @@
 {
+    "autoload": {
+        "psr-4": {
+            "devgateway\\costya\\": "costya/"
+        }
+    },
     "require": {
         "aws/aws-sdk-php": "^3.164"
     }
