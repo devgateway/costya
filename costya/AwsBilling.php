@@ -3,8 +3,6 @@ namespace devgateway\costya;
 
 use Aws\CostExplorer\CostExplorerClient;
 
-define('REGION', 'us-east-1');
-
 class AwsBilling {
   protected $data;
 
@@ -12,21 +10,17 @@ class AwsBilling {
     $cache = new FileCache($month);
     try {
       $this->data = $cache->load();
-    } catch (CostException $err) {
+    } catch (CacheMiss $err) {
       error_log($err->getMessage());
-      $this->data = $this->getData($month);
-      try {
-        $cache->save($this->data);
-      } catch (CostException $err) {
-        error_log($err->getMessage());
-      }
+      $this->data = $this->fetchData($month);
+      $cache->save($this->data);
     }
   }
 
-  protected function getData($month) {
+  protected function fetchData($month) {
     $client = new CostExplorerClient([
       'profile' => APP_NAME,
-      'region' => REGION,
+      'region' => 'us-east-1',
       'version' => 'latest'
     ]);
 

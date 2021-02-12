@@ -3,6 +3,8 @@ namespace devgateway\costya;
 
 define('APP_NAME',  'costya');
 
+class CacheMiss extends \Exception {}
+
 class FileCache {
   protected $path;
 
@@ -13,7 +15,7 @@ class FileCache {
     } elseif (isset($env['HOME'])) {
       $path = array($env['HOME'], '.cache');
     } else {
-      throw new CostException('Can\'t determine cache directory: neither XDG_CACHE_HOME nor HOME are set');
+      error_log('Can\'t determine cache directory: neither XDG_CACHE_HOME nor HOME are set');
     }
     array_push($path, APP_NAME, (string) $month);
     $this->path = join(DIRECTORY_SEPARATOR, $path);
@@ -21,7 +23,7 @@ class FileCache {
 
   public function load() {
     if (false === $data = @file_get_contents($this->path)) {
-      throw new CostException("Can't read cached data from {$this->path}");
+      throw new CacheMiss("Can't read cached data from {$this->path}");
     }
     return unserialize($data);
   }
@@ -33,7 +35,7 @@ class FileCache {
     }
 
     if (false === file_put_contents($this->path, serialize($data))) {
-      throw new CostException('Can\'t cache data');
+      error_log("Can't cache data to {$this->path}");
     }
   }
 }
