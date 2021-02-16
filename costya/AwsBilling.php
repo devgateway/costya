@@ -4,16 +4,40 @@ namespace devgateway\costya;
 use Aws\CostExplorer\CostExplorerClient;
 
 class AwsBilling {
-  protected $data;
+  protected $charges = [], $tax = 0;
+
+  public function getCharges() {
+    return $this->charges;
+  }
+
+  public function getTax() {
+    return $this->tax;
+  }
 
   public function __construct($month) {
     $cache = new FileCache($month);
     try {
-      $this->data = $cache->load();
+      $response = $cache->load();
     } catch (CacheMiss $err) {
       error_log($err->getMessage());
-      $this->data = $this->fetchData($month);
-      $cache->save($this->data);
+      $response = $this->fetchData($month);
+      $cache->save($response);
+    }
+
+    foreach ($response['ResultsByTime'][0]['Groups'] as $group) {
+      $tag = explode('$', $group['Keys'][0])[1];
+      $service = $group['Keys'][1];
+      $amount = $group['Metrics']['BlendedCost']['Amount'];
+
+      if (!isset($this->charges[$tag])) {
+        $this->charges[$tag] = 0;
+      }
+
+      if ($service == 'Tax') {
+        $this->tax += $amount;
+      } else {
+        $this->charges[$tag] += $amount;
+      }
     }
   }
 
@@ -35,19 +59,14 @@ class AwsBilling {
         [
           'Type' => 'TAG',
           'Key' => 'Project'
+        ],
+        [
+          'Type' => 'DIMENSION',
+          'Key' => 'SERVICE'
         ]
       ]
     ]);
 
     return $result->toArray();
-  }
-
-  public function get() {
-    $result = [];
-    foreach ($this->data['ResultsByTime'][0]['Groups'] as $group) {
-      $tag = explode('$', $group['Keys'][0])[1];
-      $result[$tag] = $group['Metrics']['BlendedCost']['Amount'];
-    }
-    return $result;
   }
 }

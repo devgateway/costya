@@ -30,33 +30,42 @@ class ExpensifyBilling {
   }
 
   public function toCsv($handle, $aws_billing, $invoice) {
-    $costs = [];
+    $expenses = [];
+    $charges = $aws_billing->getCharges();
+    $pretax_total = array_sum($charges);
+    $tax_total = $aws_billing->getTax();
     $total = 0;
+    $default_code = $this->default_code->format();
 
-    foreach ($aws_billing->get() as $tag => $usd) {
-      $cents = (int) round($usd * 100);
-      $total += $cents;
+    foreach ($charges as $tag => $amount) {
       if (isset($this->codes[$tag])) {
         $billing_code = $this->codes[$tag]->format();
       } else {
-        error_log("No billing code for '$tag', using '{$this->default_code->format()}'");
-        $billing_code = $this->default_code->format();
+        if ($tag) {
+          error_log("No billing code for '$tag', using '$default_code'");
+        }
+        $billing_code = $default_code;
       }
-      if (!isset($costs[$billing_code])) {
-        $costs[$billing_code] = 0;
+
+      if (!isset($expenses[$billing_code])) {
+        $expenses[$billing_code] = 0;
       }
-      $costs[$billing_code] += $cents;
+
+      $tax = $amount / $pretax_total * $tax_total;
+      $subtotal = self::toCents($amount + $tax);
+      $total += $subtotal;
+      $expenses[$billing_code] += $subtotal;
     }
 
     $diff = $invoice->cents - $total;
     if ($diff != 0) {
       error_log(sprintf('Adjusting %s by %+d cents', $this->default_code->format(), $diff));
-      $costs[$this->default_code->format()] += $diff;
+      $expenses[$this->default_code->format()] += $diff;
     }
 
     $formatted_date = $invoice->date->format('Y-m-d');
 
-    foreach ($costs as $code => $cents) {
+    foreach ($expenses as $code => $cents) {
       fputcsv($handle, [
         'Amazon Web Services',
         $formatted_date,
@@ -65,5 +74,13 @@ class ExpensifyBilling {
         $code
       ]);
     }
+  }
+
+  protected static function toCents($usd) {
+    return (int) round($usd * 100);
+  }
+
+  protected static function toUsd($cents) {
+    return sprintf('%.2f', $cents / 100.0);
   }
 }
