@@ -13,7 +13,7 @@ class Invoice {
 
       if (strpos($line, 'Total for this invoice') !== FALSE) {
         if (preg_match('/\$(\S+)\s*$/', $line, $matches) === 1) {
-          $this->cents += (int) ($matches[1] * 100);
+          $this->cents += (int) (str_replace(',', '', $matches[1]) * 100);
         } else {
           die("Can't parse line $line_num for invoice total\n");
         }
