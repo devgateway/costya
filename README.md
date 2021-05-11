@@ -34,6 +34,11 @@ Requires [Composer](https://getcomposer.org/), PHP CLI, jq, pdftk, and pdftotext
 
 ## Usage Example
 
+To verify billing codes, you need to grab `policy.json` from Expensify. Log in to your account, enable Development
+Console, filter by XHR requests, and open a report. The required JSON will be returned for a POST request to:
+
+    https://www.expensify.com/api?command=Policy_Get
+
 Download Amazon invoice PDFs to the project directory, and run:
 
     make
