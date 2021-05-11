@@ -28,7 +28,7 @@ this case.
 
 ## Installation
 
-Requires [Composer](https://getcomposer.org/), PHP CLI, pdftk, and pdftotext. To install Composer dependencies, run:
+Requires [Composer](https://getcomposer.org/), PHP CLI, jq, pdftk, and pdftotext. To install Composer dependencies, run:
 
     make install
 

@@ -1,3 +1,5 @@
 vendor
 *.pdf
+policy.json
+active.txt
 expensify
