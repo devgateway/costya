@@ -23,7 +23,8 @@ class ExpensifyBilling {
         }
       }
 
-      $this->codes[$items[0]] = new BillingCode($items[1], $items[2]);
+      $tag = strtoupper($items[0]);
+      $this->codes[$tag] = new BillingCode($items[1], $items[2]);
     }
 
     fclose($handle);

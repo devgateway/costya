@@ -25,7 +25,7 @@ class AwsBilling {
     }
 
     foreach ($response['ResultsByTime'][0]['Groups'] as $group) {
-      $tag = explode('$', $group['Keys'][0])[1];
+      $tag = strtoupper(explode('$', $group['Keys'][0])[1]);
       $service = $group['Keys'][1];
       $amount = $group['Metrics']['BlendedCost']['Amount'];
 
