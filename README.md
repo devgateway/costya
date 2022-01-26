@@ -28,7 +28,11 @@ this case.
 
 ## Installation
 
-Requires [Composer](https://getcomposer.org/), PHP CLI, jq, pdftk, and pdftotext. To install Composer dependencies, run:
+Requires [Composer](https://getcomposer.org/), PHP CLI, jq, pdftk, and pdftotext (poppler-utils package).
+
+Requires AWS credentials in the environment under profile [costya]
+
+To install Composer dependencies, run:
 
     make install
 
@@ -42,3 +46,14 @@ Console, filter by XHR requests, and open a report. The required JSON will be re
 Download Amazon invoice PDFs to the project directory, and run:
 
     make
+
+
+## Error messages
+
+    Code RG:4339-CRP-ASDB-4 from codes.csv not found in active.txt
+This usually means that there's a code coming from policy.json that may have been deactivated in the period of time being reported. Check with Finance if that's so and update the code in codes.csv
+
+    PHP Fatal error:  Uncaught Aws\Exception\CredentialsException: 'costya' not found in credentials file in /mnt/c/Users/fferr/IdeaProjects/costya/vendor/aws/aws-sdk-php/src/Credentials/CredentialProvider.php:861
+
+Make sure that you have the credentials in any of the places mentioned [here.](https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_credentials_profiles.html). Recommended to put in credentials file in .aws for the profile [costya] 
+
