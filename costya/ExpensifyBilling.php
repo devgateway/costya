@@ -54,6 +54,7 @@ class ExpensifyBilling {
 
       $tax = $amount / $pretax_total * $tax_total;
       $subtotal = self::toCents($amount + $tax);
+      error_log("TAG: '$tag', pre-tax '$amount', tax '$tax', total '$subtotal'");
       $total += $subtotal;
       $expenses[$billing_code] += $subtotal;
     }

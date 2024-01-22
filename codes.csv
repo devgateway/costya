@@ -1,16 +1,44 @@
 AWS tag,Billing code,Pillar
-MS-IT,MGMT:1026-MS-IT,Management
-AMP-CHAD,RG:AMP:6212-AMP-CHAD-2020,Total Resource Management
+AD3-ANACIM,MGMT:1026-MS-IT,Management
+AD3-IPAR,MGMT:1026-MS-IT,Management
+ALIVE,ESD:GATES-aLIVE:4820-ESD-GATES-aLIVE,Effective Service Delivery
 AMP,RG:AMP:2103-AMP-CORE,Total Resource Management
-ASDB,RG:4338-AsDB-2022,Total Resource Management
-BDGIS,MGMT:1026-MS-IT,Management
-SEEDS,ESD:GATES-SEEDS:4900-ESD-GATES-SEEDS,Effective Service Delivery
+AMP-BURKINA-2022,RG:AMP:2107-AMP-Burkina,Total Resource Management
+AMP-BURKINA-FASO,RG:AMP:2107-AMP-Burkina,Total Resource Management
+AMP-CHAD,RG:AMP:2106-AMP-UGANDA-2022,Total Resource Management
+AMP-CORE,RG:AMP:2106-AMP-UGANDA-2022,Total Resource Management
+AMP-GGW,BD:BD-RG,Business Development
+AMP-HAITI,MGMT:1026-MS-IT,Management
+AMP-TOGO,RG:AMP:2105-AMP TOGO-2022,Total Resource Management
+ASDB,MGMT:1026-MS-IT,Management
+BOAD,RG:4912-BOAD,Total Resource Management
+CASHEW,ESD:4800- PRO-Cashew,Effective Service Delivery
+CASHEW-NEW,ESD:4800- PRO-Cashew,Effective Service Delivery
+CCR,MGMT:1026-MS-IT,Management
+Cashew,ESD:4800- PRO-Cashew,Effective Service Delivery
+DCDJ,MGMT:1026-MS-IT,Management
+DYSC,MGMT:1026-MS-IT,Management
+EXPERTIA,MGMT:1026-MS-IT,Management
+Forsah,ESD:4924-IREX-FORSAH,Effective Service Delivery
+IFAD,ESD:GATES-aLIVE:4820-ESD-GATES-aLIVE,Effective Service Delivery
+IREX,MGMT:1026-MS-IT,Management
+IREX-TIKRIT,MGMT:1026-MS-IT,Management
+MS-IT,MGMT:1026-MS-IT,Management
+MS-IT-test-ebs,MGMT:1026-MS-IT,Management
+NEITI,MGMT:1026-MS-IT,Management
+OC,BD:BD-RG:1131-BD-RG-OC,Business Development
+OCMAKU,BD:BD-RG:1131-BD-RG-OC,Business Development
+OCNANDI,BD:BD-RG:1131-BD-RG-OC,Business Development
+OPVPN,BD:BD-RG:1131-BD-RG-OC,Business Development
+RAIT,MGMT:1026-MS-IT,Management
+RESEARCH,MGMT:1026-MS-IT,Management
+SEEDS,MGMT:1026-MS-IT,Management
+TASAI,MGMT:1026-MS-IT,Management
+TCD,ESD:GATES-TOBACCO:4700-ESD-GATES-TOBACCO,Effective Service Delivery
 TCDI,ESD:GATES-TOBACCO:4700-ESD-GATES-TOBACCO,Effective Service Delivery
 VIFAA,ESD:GATES-FERTILIZER:4500-ESD-GATES-FERTILIZER-DAS,Effective Service Delivery
 VIFAACOVID,ESD:GATES-FERTILIZER:4505-FERTILIZER-COVID,Effective Service Delivery
-YALI,ESD:4604-YALI-HOSTING,Effective Service Delivery
-AMP-CORE,RG:AMP:2103-AMP-CORE,Total Resource Management
-CASHEW,ESD:4800- PRO-Cashew,Effective Service Delivery
-OC,BD:BD-RG:1131-BD-RG-OC,Total Resource Management
-OCMAKU,BD:BD-RG:1131-BD-RG-OC,Total Resource Management
-OCPK,BD:BD-RG:1131-BD-RG-OC,Total Resource Management
+WIM-PROTOTYPE,MGMT:1026-MS-IT,Management
+YALI,ESD:4606-YALI 2023,Effective Service Delivery
+aLIVE,ESD:GATES-aLIVE:4820-ESD-GATES-aLIVE,Effective Service Delivery
+IREX-CM,RG:IREX:4923-IREX-CM-Moldova,Total Resource Management
